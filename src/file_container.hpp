@@ -23,8 +23,6 @@ namespace White
 
 
         void add_vec(const std::string&);
-        // size:相对于vec中的位置
-        // 未来会做多线程支持
         void start_thread(const std::size_t& start, const std::size_t& end);
 
     public:
