@@ -1,7 +1,8 @@
+#include <thread>
 #include "file_container.hpp"
 #include "tool.hpp"
 #include "convert.hpp"
-#include <thread>
+#include <atomic>
 
 White::file_container::file_container(const std::string& input,
                                       const std::string& output,
@@ -13,14 +14,45 @@ White::file_container::file_container(const std::string& input,
     format(format),
     overwrite(overwrite),
     thread(thread),
-    is_dir(false)
+    is_dir(false),
+    add_file_bar(nullptr),
+    thread_bar(nullptr)
 {
     if (std::filesystem::is_directory(input))
     {
         this->is_dir = true;
-        std::cout << "添加文件中" << std::endl;
+        indicators::show_console_cursor(false);
+        this->add_file_bar.reset(new indicators::IndeterminateProgressBar{
+            indicators::option::BarWidth{60},
+            indicators::option::Start{"["},
+            indicators::option::Fill{"."},
+            indicators::option::Lead{"<==>"},
+            indicators::option::End{"]"},
+            indicators::option::PostfixText{"添加文件至待处理队列中"},
+        });
+
+        // 进度条更新线程
+        std::thread(
+            [this]()
+            {
+                while (!this->add_file_bar->is_completed())
+                {
+                    this->add_file_bar->tick();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+            })
+            .detach();
     }
-    add_vec(input);
+    this->add_vec(input);
+    if (add_file_bar)
+    {
+        this->add_file_bar->mark_as_completed();
+        std::cout << termcolor::bold << termcolor::green
+                  << "文件队列添加完毕,队列大小:" << this->vec.size()
+                  << std::endl
+                  << termcolor::reset;
+        indicators::show_console_cursor(true);
+    }
 }
 
 void White::file_container::add_vec(const std::string& path)
@@ -81,13 +113,25 @@ void White::file_container::run()
             }
         }
 
-        sema.reset(new White::semaphore(0, threads.size()));
+        thread_sema.reset(new White::semaphore(0, threads.size()));
         for (auto& item : threads)
             item.detach();
 
+        indicators::show_console_cursor(false);
+        this->thread_bar.reset(new indicators::ProgressBar{
+            indicators::option::BarWidth{60},
+            indicators::option::Start{"["},
+            indicators::option::Fill{"="},
+            indicators::option::Lead{">"},
+            indicators::option::Remainder{" "},
+            indicators::option::End{"]"},
+            indicators::option::MaxProgress{this->vec.size()}});
 
-        std::cout << "转换中" << std::endl;
-        sema->wait();
+        thread_sema->wait();
+        indicators::show_console_cursor(true);
+        std::cout << termcolor::bold << termcolor::green << "处理完毕"
+                  << std::endl
+                  << termcolor::reset;
     }
     else
     {
@@ -113,25 +157,47 @@ void White::file_container::run()
 void White::file_container::start_thread(const std::size_t& start,
                                          const std::size_t& end)
 {
+    static std::atomic_size_t conut = 0;
     for (auto index = start; index != end; ++index)
     {
         if (this->overwrite)
+        {
             White::Tool::write_to_file(
                 White::convert::Convert(
                     White::Tool::read_to_string(this->vec[index]),
                     this->format),
                 this->vec[index]);
+            ++conut;
+            this->thread_bar->set_option(indicators::option::PostfixText(
+                std::to_string(conut) + "/" +
+                std::to_string(this->vec.size())));
+            this->thread_bar->tick();
+        }
         else if (output != "")
+        {
             White::Tool::write_to_file(
                 White::convert::Convert(
                     White::Tool::read_to_string(this->vec[index]),
                     this->format),
                 this->output);
+            ++conut;
+            this->thread_bar->set_option(indicators::option::PostfixText(
+                std::to_string(conut) + "/" +
+                std::to_string(this->vec.size())));
+            this->thread_bar->tick();
+        }
         else
+        {
             White::Tool::write_to_file(
                 White::convert::Convert(
                     White::Tool::read_to_string(this->vec[0]), this->format),
                 this->vec[index] + '.' + format);
+            ++conut;
+            this->thread_bar->set_option(indicators::option::PostfixText(
+                std::to_string(conut) + "/" +
+                std::to_string(this->vec.size())));
+            this->thread_bar->tick();
+        }
     }
-    sema->signal();
+    thread_sema->signal();
 }

@@ -17,6 +17,8 @@ if(TERMUX)
     add_definitions(-DTERMUX)
 endif()
 
+include_directories(${PROJECT_SOURCE_DIR}/src/indicators/include)
+
 # 编译
 add_executable(
     ${PROJECT_NAME} 

@@ -7,19 +7,25 @@
 #include <iostream>
 #include <memory>
 #include "Semaphore.hpp"
+#include "indicators/include/indicators/indeterminate_progress_bar.hpp"
+#include "indicators/include/indicators/cursor_control.hpp"
+#include "indicators/include/indicators/termcolor.hpp"
+#include "indicators/include/indicators/progress_bar.hpp"
 
 namespace White
 {
     class file_container
     {
     private:
-        std::vector<std::string>          vec;
-        std::string                       output;
-        std::string                       format;
-        bool                              overwrite;
-        std::size_t                       thread;
-        bool                              is_dir;
-        std::unique_ptr<White::semaphore> sema;
+        std::vector<std::string>                              vec;
+        std::string                                           output;
+        std::string                                           format;
+        bool                                                  overwrite;
+        std::size_t                                           thread;
+        bool                                                  is_dir;
+        std::unique_ptr<White::semaphore>                     thread_sema;
+        std::unique_ptr<indicators::IndeterminateProgressBar> add_file_bar;
+        std::unique_ptr<indicators::ProgressBar>              thread_bar;
 
 
         void add_vec(const std::string&);

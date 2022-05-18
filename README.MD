@@ -43,12 +43,18 @@ pkg install file boost-headers cmake libicu
 
 在Linux上构建
 ```sh
+git clone https://github.com/WhitePr/orugooru.git
+cd orugooru
+git submodule update --init --recursive
 mkdir builid
 cd build
 cmake .. && cmake --build . 
 ```
 在Termux上构建
 ```sh
+git clone https://github.com/WhitePr/orugooru.git
+cd orugooru
+git submodule update --init --recursive
 mkdir builid
 cd build
 cmake .. -DTERMUX=on && cmake --build . 
