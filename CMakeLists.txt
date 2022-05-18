@@ -12,6 +12,11 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_DIR) # 添加源代码文件�
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin) # 可执行文件输出目录
 
+option(TERMUX "Build in Termux" off) # 开启termux的编译宏
+if(TERMUX)
+    add_definitions(-DTERMUX)
+endif()
+
 # 编译
 add_executable(
     ${PROJECT_NAME} 

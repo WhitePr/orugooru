@@ -4,7 +4,12 @@
 #include <utility>
 #include <thread>
 #include <boost/program_options.hpp>
+#ifndef TERMUX
 #include <bits/local_lim.h>
+#endif
+#ifdef TERMUX
+#include <bits/posix_limits.h>
+#endif
 #include "tool.hpp"
 
 namespace bpo = boost::program_options;

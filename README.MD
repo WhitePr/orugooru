@@ -40,10 +40,18 @@ pkg install file boost-headers cmake libicu
 ### 构建
 
 本项目使用cmake
+
+在Linux上构建
 ```sh
 mkdir builid
 cd build
 cmake .. && cmake --build . 
+```
+在Termux上构建
+```sh
+mkdir builid
+cd build
+cmake .. -DTERMUX=on && cmake --build . 
 ```
 您可以在bin文件夹找到编译好的可执行文件
 
