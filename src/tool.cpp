@@ -32,10 +32,10 @@ std::pair<bpo::options_description, bpo::variables_map>
     bpo::options_description opts("All Command");
     bpo::variables_map       vm;
 
-    opts.add_options()(
-        "input,i",
-        bpo::value<std::string>(),
-        "输入文件\n可以是文件也可以是文件夹\n文件夹将递归文件夹下所有文件")(
+    opts.add_options()("input,i",
+                       bpo::value<std::string>(),
+                       "输入文件\n可以是文件也可以是文件夹\n文件夹将递归文件夹"
+                       "下所有文件\n将自动检测文件是否是文本文件")(
         "output,o",
         bpo::value<std::string>()->default_value(""),
         "输出文件\n不指定将输出给源文件添加转换格式后缀的新文件(比如1.txt->1."

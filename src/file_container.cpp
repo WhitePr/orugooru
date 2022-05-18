@@ -42,11 +42,13 @@ void White::file_container::add_vec(const std::string& path)
 
 void White::file_container::run()
 {
+    if(this->vec.empty())
+        throw std::runtime_error("待转换的队列为空,请检查您的输入文件是否是文本文件");
     if (this->is_dir)
     {
         for (const auto& path : this->vec)
         {
-            if (overwrite)
+            if (this->overwrite)
                 White::Tool::write_to_file(
                     White::convert::Convert(White::Tool::read_to_string(path),
                                             this->format),
@@ -61,7 +63,7 @@ void White::file_container::run()
     }
     else
     {
-        if (overwrite)
+        if (this->overwrite)
             White::Tool::write_to_file(
                 White::convert::Convert(
                     White::Tool::read_to_string(this->vec[0]), this->format),

@@ -25,7 +25,18 @@ int main(int argc, char* argv[])
     auto thread    = command.second["thread"].as<std::size_t>();
 
     std::cout << "转换中" << std::endl;
-    White::file_container(input, output, format, overwrite, thread).run();
+
+    try
+    {
+        White::file_container(input, output, format, overwrite, thread).run();
+    }
+    catch (const std::runtime_error& x)
+    {
+        std::cerr << "\033[31m"
+                  << "Error:"
+                  << "\033[0m" << x.what() << std::endl;
+    }
+
 
     return 0;
 }
