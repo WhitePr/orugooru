@@ -74,7 +74,9 @@ orugooru -h
 
 目前没有写转换编码的格式正确性 如果输入了错误的转换格式将会导致文件被截断比如:
 
+```sh
 orugooru -i text.txt -f shift -w 
+```
 
 text.txt将会被截断为0
 
