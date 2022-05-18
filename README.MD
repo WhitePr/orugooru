@@ -21,18 +21,19 @@
 本项目使用了以下库
 * libmagic
 * boost
+* ICU
   
 以及您的C++编译器需要最低支持C++20
 
 ### Arch Linux
 
 ```sh 
-pacman -S file boost cmake
+pacman -S file boost cmake icu
 ```
 
 ### Termux
 ```sh
-pkg install file boost-headers cmake
+pkg install file boost-headers cmake libicu
 ```
 
 

@@ -5,23 +5,27 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <memory>
+#include "Semaphore.hpp"
 
 namespace White
 {
     class file_container
     {
     private:
-        std::vector<std::string> vec;
-        std::string              output;
-        std::string              format;
-        bool                     overwrite;
-        bool                     is_dir;
+        std::vector<std::string>          vec;
+        std::string                       output;
+        std::string                       format;
+        bool                              overwrite;
+        std::size_t                       thread;
+        bool                              is_dir;
+        std::unique_ptr<White::semaphore> sema;
+
 
         void add_vec(const std::string&);
         // size:相对于vec中的位置
         // 未来会做多线程支持
-        void start_thread(const std::size_t& start,
-                          const std::size_t& end) = delete;
+        void start_thread(const std::size_t& start, const std::size_t& end);
 
     public:
         file_container()  = delete;

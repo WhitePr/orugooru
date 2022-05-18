@@ -22,9 +22,9 @@ int main(int argc, char* argv[])
     auto output    = command.second["output"].as<std::string>();
     auto format    = command.second["format"].as<std::string>();
     auto overwrite = static_cast<bool>(command.second.count("overwrite"));
-    auto thread    = command.second["thread"].as<std::size_t>();
-
-    std::cout << "转换中" << std::endl;
+    auto thread    = (command.second["thread"].as<std::size_t>() == 0
+                          ? std::thread::hardware_concurrency()
+                          : command.second["thread"].as<std::size_t>());
 
     try
     {

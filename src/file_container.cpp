@@ -8,10 +8,18 @@ White::file_container::file_container(const std::string& input,
                                       const std::string& format,
                                       const bool&        overwrite,
                                       const std::size_t& thread) :
-    vec(), output(output), format(format), overwrite(overwrite), is_dir(false)
+    vec(),
+    output(output),
+    format(format),
+    overwrite(overwrite),
+    thread(thread),
+    is_dir(false)
 {
     if (std::filesystem::is_directory(input))
+    {
         this->is_dir = true;
+        std::cout << "添加文件中" << std::endl;
+    }
     add_vec(input);
 }
 
@@ -42,28 +50,54 @@ void White::file_container::add_vec(const std::string& path)
 
 void White::file_container::run()
 {
-    if(this->vec.empty())
-        throw std::runtime_error("待转换的队列为空,请检查您的输入文件是否是文本文件");
+    if (this->vec.empty())
+        throw std::runtime_error(
+            "待转换的队列为空,"
+            "请检查您的输入文件是否是文本文件或包含文本文件的文件夹");
     if (this->is_dir)
     {
-        for (const auto& path : this->vec)
-        {
-            if (this->overwrite)
-                White::Tool::write_to_file(
-                    White::convert::Convert(White::Tool::read_to_string(path),
-                                            this->format),
-                    path);
+        std::size_t              thread_file = this->vec.size() / this->thread;
+        std::size_t              remainder   = this->vec.size() % this->thread;
+        std::size_t              count       = 0;
+        std::vector<std::thread> threads;
 
-            else
-                White::Tool::write_to_file(
-                    White::convert::Convert(White::Tool::read_to_string(path),
-                                            this->format),
-                    path + '.' + format);
+        for (std::size_t index = 0; index != remainder; ++index)
+        {
+            threads.emplace_back(&White::file_container::start_thread,
+                                 this,
+                                 count,
+                                 count + (thread_file + 1));
+            count += (thread_file + 1);
         }
+        if (thread_file != 0)
+        {
+            for (std::size_t index = remainder; index != this->thread; ++index)
+            {
+                threads.emplace_back(&White::file_container::start_thread,
+                                     this,
+                                     count,
+                                     count + thread_file);
+                count += thread_file;
+            }
+        }
+
+        sema.reset(new White::semaphore(0, threads.size()));
+        for (auto& item : threads)
+            item.detach();
+
+
+        std::cout << "转换中" << std::endl;
+        sema->wait();
     }
     else
     {
+        std::cout << "转换中" << std::endl;
         if (this->overwrite)
+            White::Tool::write_to_file(
+                White::convert::Convert(
+                    White::Tool::read_to_string(this->vec[0]), this->format),
+                this->vec[0]);
+        else if (output != "")
             White::Tool::write_to_file(
                 White::convert::Convert(
                     White::Tool::read_to_string(this->vec[0]), this->format),
@@ -72,6 +106,32 @@ void White::file_container::run()
             White::Tool::write_to_file(
                 White::convert::Convert(
                     White::Tool::read_to_string(this->vec[0]), this->format),
-                this->output + '.' + format);
+                this->vec[0] + '.' + format);
     }
+}
+
+void White::file_container::start_thread(const std::size_t& start,
+                                         const std::size_t& end)
+{
+    for (auto index = start; index != end; ++index)
+    {
+        if (this->overwrite)
+            White::Tool::write_to_file(
+                White::convert::Convert(
+                    White::Tool::read_to_string(this->vec[index]),
+                    this->format),
+                this->vec[index]);
+        else if (output != "")
+            White::Tool::write_to_file(
+                White::convert::Convert(
+                    White::Tool::read_to_string(this->vec[index]),
+                    this->format),
+                this->output);
+        else
+            White::Tool::write_to_file(
+                White::convert::Convert(
+                    White::Tool::read_to_string(this->vec[0]), this->format),
+                this->vec[index] + '.' + format);
+    }
+    sema->signal();
 }

@@ -4,6 +4,7 @@
 #include <utility>
 #include <thread>
 #include <boost/program_options.hpp>
+#include <bits/local_lim.h>
 #include "tool.hpp"
 
 namespace bpo = boost::program_options;
@@ -31,6 +32,8 @@ std::pair<bpo::options_description, bpo::variables_map>
 {
     bpo::options_description opts("All Command");
     bpo::variables_map       vm;
+    std::string thread("指定线程\n默认值为设备核心数\n最大值为" +
+                       std::to_string(_POSIX_THREAD_KEYS_MAX - 1));
 
     opts.add_options()("input,i",
                        bpo::value<std::string>(),
@@ -47,8 +50,7 @@ std::pair<bpo::options_description, bpo::variables_map>
         "thread,t",
         bpo::value<std::size_t>()->default_value(
             std::thread::hardware_concurrency()),
-        "指定线程\n默认值为设备核心数\n目前还没写相关代码\n该参数目前无效")(
-        "help,h", "显示帮助");
+        thread.c_str())("help,h", "显示帮助");
 
     bpo::store(bpo::parse_command_line(argc, argv, opts), vm);
 
