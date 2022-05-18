@@ -6,8 +6,7 @@
 #include <boost/program_options.hpp>
 #ifndef TERMUX
 #include <bits/local_lim.h>
-#endif
-#ifdef TERMUX
+#else
 #include <bits/posix_limits.h>
 #endif
 #include "tool.hpp"
