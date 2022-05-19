@@ -14,7 +14,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin) # 可执行文件�
 
 option(TERMUX "Build in Termux" off) # 开启termux的编译宏
 if(TERMUX)
-    add_compile_definitions(-DTERMUX)
+    add_compile_definitions(TERMUX)
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/src/indicators/include)
