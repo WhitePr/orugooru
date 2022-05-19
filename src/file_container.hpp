@@ -6,11 +6,12 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <unordered_set>
+#include <indicators/indeterminate_progress_bar.hpp>
+#include <indicators/cursor_control.hpp>
+#include <indicators/termcolor.hpp>
+#include <indicators/progress_bar.hpp>
 #include "Semaphore.hpp"
-#include "indicators/include/indicators/indeterminate_progress_bar.hpp"
-#include "indicators/include/indicators/cursor_control.hpp"
-#include "indicators/include/indicators/termcolor.hpp"
-#include "indicators/include/indicators/progress_bar.hpp"
 
 namespace White
 {
@@ -26,10 +27,13 @@ namespace White
         std::unique_ptr<White::semaphore>                     thread_sema;
         std::unique_ptr<indicators::IndeterminateProgressBar> add_file_bar;
         std::unique_ptr<indicators::ProgressBar>              thread_bar;
+        std::unordered_set<std::string>                       extension_name;
 
 
-        void add_vec(const std::string&);
+        void add_vec_file(const std::string& path);
+        void add_vec_folder(const std::string& path);
         void start_thread(const std::size_t& start, const std::size_t& end);
+        void write_set(const std::string& str);
 
     public:
         file_container()  = delete;
@@ -38,7 +42,8 @@ namespace White
                        const std::string& output,
                        const std::string& format,
                        const bool&        overwrite,
-                       const std::size_t& thread);
+                       const std::size_t& thread,
+                       const std::string& match);
         void run();
     };
 } // namespace White

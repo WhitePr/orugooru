@@ -8,7 +8,8 @@ White::file_container::file_container(const std::string& input,
                                       const std::string& output,
                                       const std::string& format,
                                       const bool&        overwrite,
-                                      const std::size_t& thread) :
+                                      const std::size_t& thread,
+                                      const std::string& match) :
     vec(),
     output(output),
     format(format),
@@ -18,6 +19,7 @@ White::file_container::file_container(const std::string& input,
     add_file_bar(nullptr),
     thread_bar(nullptr)
 {
+    this->write_set(match);
     if (std::filesystem::is_directory(input))
     {
         this->is_dir = true;
@@ -42,10 +44,8 @@ White::file_container::file_container(const std::string& input,
                 }
             })
             .detach();
-    }
-    this->add_vec(input);
-    if (add_file_bar)
-    {
+
+        this->add_vec_folder(input);
         this->add_file_bar->mark_as_completed();
         std::cout << termcolor::bold << termcolor::green
                   << "文件队列添加完毕,队列大小:" << this->vec.size()
@@ -53,31 +53,14 @@ White::file_container::file_container(const std::string& input,
                   << termcolor::reset;
         indicators::show_console_cursor(true);
     }
+    else
+        this->add_vec_file(input);
 }
 
-void White::file_container::add_vec(const std::string& path)
+void White::file_container::add_vec_folder(const std::string& path)
 {
-    if (std::filesystem::is_directory(path))
-    {
-        for (const auto& item : std::filesystem::directory_iterator(path))
-        {
-            if (std::filesystem::is_directory(item))
-            {
-                this->add_vec(item.path().c_str());
-            }
-            else
-            {
-                auto filename = item.path().c_str();
-                if (White::Tool::is_text(filename))
-                    this->vec.push_back(filename);
-            }
-        }
-    }
-    else
-    {
-        if (White::Tool::is_text(path))
-            this->vec.push_back(path);
-    }
+    for (const auto& item : std::filesystem::recursive_directory_iterator(path))
+        this->add_vec_file(item.path().c_str());
 }
 
 void White::file_container::run()
@@ -173,19 +156,6 @@ void White::file_container::start_thread(const std::size_t& start,
                 std::to_string(this->vec.size())));
             this->thread_bar->tick();
         }
-        else if (output != "")
-        {
-            White::Tool::write_to_file(
-                White::convert::Convert(
-                    White::Tool::read_to_string(this->vec[index]),
-                    this->format),
-                this->output);
-            ++conut;
-            this->thread_bar->set_option(indicators::option::PostfixText(
-                std::to_string(conut) + "/" +
-                std::to_string(this->vec.size())));
-            this->thread_bar->tick();
-        }
         else
         {
             White::Tool::write_to_file(
@@ -200,4 +170,27 @@ void White::file_container::start_thread(const std::size_t& start,
         }
     }
     thread_sema->signal();
+}
+
+void White::file_container::add_vec_file(const std::string& path)
+{
+    auto name = std::filesystem::path(path).extension();
+    if (White::Tool::is_text(path))
+        this->vec.push_back(path);
+    else if (this->extension_name.find(name) != this->extension_name.end())
+        this->vec.push_back(path);
+}
+
+void White::file_container::write_set(const std::string& str)
+{
+    std::size_t pos = 0;
+
+    while (pos != std::string::npos)
+    {
+        auto pos_temp = str.find(';', pos);
+        auto name     = str.substr(pos, pos_temp);
+        this->extension_name.insert(name);
+        pos =
+            (pos_temp == std::string::npos ? std::string::npos : pos_temp + 1);
+    }
 }

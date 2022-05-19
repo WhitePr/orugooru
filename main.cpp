@@ -25,16 +25,32 @@ int main(int argc, char* argv[])
     auto thread    = (command.second["thread"].as<std::size_t>() == 0
                           ? std::thread::hardware_concurrency()
                           : command.second["thread"].as<std::size_t>());
+    auto match     = command.second["match"].as<std::string>();
 
     try
     {
-        White::file_container(input, output, format, overwrite, thread).run();
+        White::file_container(input, output, format, overwrite, thread, match)
+            .run();
     }
     catch (const std::runtime_error& x)
     {
         std::cerr << "\033[31m"
                   << "Error:"
-                  << "\033[0m" << x.what() << std::endl;
+                  << "\033[0m" << x.what()
+                  << std::endl
+                  // 抛出异常时终端样式可能未恢复
+                  << termcolor::reset;
+        indicators::show_console_cursor(true);
+        return EXIT_FAILURE;
+    }
+    catch (...)
+    {
+        std::cerr << "\033[31m"
+                  << "Error:"
+                  << "\033[0m"
+                  << "未知错误" << std::endl　 << termcolor::reset;
+        indicators::show_console_cursor(true);
+        return EXIT_FAILURE;
     }
 
 
