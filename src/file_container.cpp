@@ -25,10 +25,10 @@ White::file_container::file_container(const std::string& input,
         this->is_dir = true;
         indicators::show_console_cursor(false);
         this->add_file_bar.reset(new indicators::IndeterminateProgressBar{
-            indicators::option::BarWidth{60},
+            indicators::option::BarWidth{50},
             indicators::option::Start{"["},
-            indicators::option::Fill{"."},
-            indicators::option::Lead{"<==>"},
+            indicators::option::Fill{" "},
+            indicators::option::Lead{"<=>"},
             indicators::option::End{"]"},
             indicators::option::PostfixText{"添加文件至待处理队列中"},
         });
@@ -102,7 +102,7 @@ void White::file_container::run()
 
         indicators::show_console_cursor(false);
         this->thread_bar.reset(new indicators::ProgressBar{
-            indicators::option::BarWidth{60},
+            indicators::option::BarWidth{50},
             indicators::option::Start{"["},
             indicators::option::Fill{"="},
             indicators::option::Lead{">"},
