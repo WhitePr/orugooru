@@ -12,6 +12,7 @@ namespace White
     {
         std::string Convert(const std::string&, const std::string&);
         std::string encode_detection(const std::string&);
+        bool format_check(const std::string& format);
     } // namespace convert
 } // namespace White
 

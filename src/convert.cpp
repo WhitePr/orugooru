@@ -1,6 +1,5 @@
 #include <iostream>
 #include <memory>
-#include <utility>
 #include <unicode/ucnv.h>
 #include <unicode/uenum.h>
 #include <unicode/unistr.h>
@@ -35,4 +34,12 @@ std::string White::convert::encode_detection(const std::string& input)
     ucm = ucsdet_detect(csd, &status);
 
     return std::string(ucsdet_getName(ucm, &status));
+}
+
+bool White::convert::format_check(const std::string& format)
+{
+    UErrorCode status   = U_ZERO_ERROR;
+    auto       count = ucnv_countAliases(format.c_str(), &status);
+
+    return count;
 }

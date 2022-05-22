@@ -1,5 +1,6 @@
 #include "src/file_container.hpp"
 #include "src/tool.hpp"
+#include "src/convert.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -27,6 +28,16 @@ int main(int argc, char* argv[])
                           : command.second["thread"].as<std::size_t>());
     auto match     = command.second["match"].as<std::string>();
 
+    if (!White::convert::format_check(format))
+    {
+        std::cerr << "\033[31m"
+                  << "Error:"
+                  << "\033[0m"
+                  << "格式错误" << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
     try
     {
         White::file_container(input, output, format, overwrite, thread, match)
@@ -48,7 +59,8 @@ int main(int argc, char* argv[])
         std::cerr << "\033[31m"
                   << "Error:"
                   << "\033[0m"
-                  << "未知错误" << std::endl　 << termcolor::reset;
+                  << "未知错误" << std::endl
+                  << termcolor::reset;
         indicators::show_console_cursor(true);
         return EXIT_FAILURE;
     }
